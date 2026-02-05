@@ -5,7 +5,8 @@ from flask import Flask, request
 import telebot
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHANNEL_ID = os.environ.get("CHANNEL_ID")
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID"))
+
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
