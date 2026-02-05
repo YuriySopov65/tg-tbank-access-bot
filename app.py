@@ -17,24 +17,20 @@ paid_orders = set()
 def tbank_webhook():
     data = request.get_json(silent=True) or {}
 
-    # берём OrderId / PaymentId в любом регистре
-    order_id = (data.get("OrderId") or data.get("orderId") or data.get("ORDERID") or "").strip()
-    payment_id = str(data.get("PaymentId") or data.get("paymentId") or "").strip()
+    order_id = str(
+        data.get("OrderId") or data.get("orderId") or data.get("ORDERID") or ""
+    ).strip()
 
-    status = str(data.get("Status") or data.get("status") or "").strip().upper()
+    status = str(
+        data.get("Status") or data.get("status") or ""
+    ).strip().upper()
 
-    # лог в Render (очень важно для диагностики)
     print("TBANK WEBHOOK:", data)
 
-    # считаем "оплачено" по финальным статусам (подстраховка)
-    PAID_STATUSES = {"CONFIRMED", "AUTHORIZED"}
-    if order_id and status in PAID_STATUSES:
+    if order_id and status in {"CONFIRMED", "AUTHORIZED"}:
         paid_orders.add(order_id)
-        # можно ещё сохранять payment_id, если решите использовать его
 
     return "OK", 200
-
-
 @bot.message_handler(commands=["start"])
 def start_cmd(message):
     if not paid_orders:
