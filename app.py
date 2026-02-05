@@ -51,6 +51,13 @@ def test_cmd(message):
         bot.send_message(message.chat.id, f"Тестовая ссылка в канал:\n{invite.invite_link}")
     except Exception as e:
         bot.send_message(message.chat.id, f"Ошибка при создании ссылки: {e}")
+@bot.message_handler(commands=["whoami"])
+def whoami_cmd(message):
+    try:
+        me = bot.get_me()
+        bot.send_message(message.chat.id, f"Я бот: @{me.username} ({me.first_name})\nID: {me.id}")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Ошибка whoami: {e}")
 
 def run_bot():
     bot.infinity_polling(skip_pending=True)
