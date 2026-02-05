@@ -58,6 +58,13 @@ def whoami_cmd(message):
         bot.send_message(message.chat.id, f"Я бот: @{me.username} ({me.first_name})\nID: {me.id}")
     except Exception as e:
         bot.send_message(message.chat.id, f"Ошибка whoami: {e}")
+@bot.message_handler(commands=["diag"])
+def diag_cmd(message):
+    try:
+        chat = bot.get_chat(CHANNEL_ID)
+        bot.send_message(message.chat.id, f"✅ Канал найден: {chat.title}\nID: {chat.id}")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Канал не найден/нет доступа.\nОшибка: {e}\nCHANNEL_ID={CHANNEL_ID}")
 
 def run_bot():
     bot.infinity_polling(skip_pending=True)
