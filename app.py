@@ -9,6 +9,9 @@ CHANNEL_ID = int(os.environ.get("CHANNEL_ID"))
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
+@app.route("/", methods=["GET"])
+def home():
+    return "Bot is running", 200
 
 paid_orders = set()
 
