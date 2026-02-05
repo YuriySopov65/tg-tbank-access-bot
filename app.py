@@ -39,6 +39,17 @@ def start_cmd(message):
     )
 
     bot.send_message(message.chat.id, f"Оплата подтверждена ✅\nВот ссылка для входа:\n{invite.invite_link}")
+@bot.message_handler(commands=["test"])
+def test_cmd(message):
+    try:
+        invite = bot.create_chat_invite_link(
+            chat_id=CHANNEL_ID,
+            member_limit=1,
+            expire_date=int(time.time()) + 1800
+        )
+        bot.send_message(message.chat.id, f"Тестовая ссылка в канал:\n{invite.invite_link}")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Ошибка при создании ссылки: {e}")
 
 def run_bot():
     bot.infinity_polling(skip_pending=True)
