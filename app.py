@@ -65,23 +65,32 @@ def test_cmd(message):
             member_limit=1,
             expire_date=int(time.time()) + 1800
         )
-        bot.send_message(message.chat.id, f"Тестовая ссылка в канал:\n{invite.invite_link}")
-    except Exception as e:
-        bot.send_message(message.chat.id, f"Ошибка при создании ссылки: {e}")
-@bot.message_handler(commands=["whoami"])
-def whoami_cmd(message):
-    try:
-        me = bot.get_me()
-        bot.send_message(message.chat.id, f"Я бот: @{me.username} ({me.first_name})\nID: {me.id}")
-    except Exception as e:
-        bot.send_message(message.chat.id, f"Ошибка whoami: {e}")
-@bot.message_handler(commands=["diag"])
-def diag_cmd(message):
-    try:
-        chat = bot.get_chat(CHANNEL_ID)
-        bot.send_message(message.chat.id, f"✅ Канал найден: {chat.title}\nID: {chat.id}")
-    except Exception as e:
-        bot.send_message(message.chat.id, f"❌ Канал не найден/нет доступа.\nОшибка: {e}\nCHANNEL_ID={CHANNEL_ID}")
+        @bot.message_handler(commands=["start"])
+def start_cmd(message):
+    parts = message.text.split(maxsplit=1)
+    order_id = parts[1].strip() if len(parts) > 1 else ""
+
+    if not order_id:
+        bot.send_message(
+            message.chat.id,
+            "⚠️ Ссылка пришла без номера заказа.\n"
+            "Оплатите заново или перейдите по кнопке после оплаты — там будет правильная ссылка."
+        )
+        return
+
+    if order_id not in paid_orders:
+        bot.send_message(
+            message.chat.id,
+            "⏳ Платёж пока не подтверждён. Подождите 1–2 минуты и нажмите /start ещё раз."
+        )
+        return
+
+    invite = bot.create_chat_invite_link(
+        chat_id=int(CHANNEL_ID),
+        member_limit=1,
+        expire_date=int(time.time()) + 1800
+    )
+    bot.send_message(message.chat.id, f"✅ Оплата подтверждена.\nВот ссылка для входа:\n{invite.invite_link}")
 
 def run_bot():
     bot.infinity_polling(skip_pending=True)
