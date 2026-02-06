@@ -1,24 +1,21 @@
 import os
 import time
-import threading
 from flask import Flask, request
 import telebot
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "0"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID"))
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
 paid_orders = set()
 
-
-@app.route("/", methods=["GET"])
+@app.get("/")
 def home():
-    return "Bot is running", 200
+    return "OK", 200
 
-
-@app.route("/tbank", methods=["POST"])
+@app.post("/tbank")
 def tbank_webhook():
     data = request.get_json(silent=True) or {}
 
@@ -32,12 +29,11 @@ def tbank_webhook():
 
     print("TBANK WEBHOOK:", data)
 
-    # Важно: отмечаем оплату только если есть order_id и статус оплаты
     if order_id and status in {"CONFIRMED", "AUTHORIZED"}:
         paid_orders.add(order_id)
+        print("PAID_ORDERS NOW:", list(paid_orders))
 
     return "OK", 200
-
 
 @bot.message_handler(commands=["start"])
 def start_cmd(message):
@@ -48,9 +44,8 @@ def start_cmd(message):
         bot.send_message(
             message.chat.id,
             "✅ Бот работает.\n"
-            "Чтобы выдать доступ, нужен номер заказа.\n"
-            "Перейдите по кнопке после оплаты (там будет /start с цифрами)\n"
-            "или отправьте вручную: /start 12345"
+            "Нужен номер заказа.\n"
+            "Напишите так: /start TEST123"
         )
         return
 
@@ -58,30 +53,14 @@ def start_cmd(message):
         bot.send_message(
             message.chat.id,
             "⏳ Платёж по этому заказу пока не подтверждён.\n"
-            "Подождите 1–2 минуты и нажмите /start ещё раз."
+            "Подождите 1–2 минуты и нажмите /start ещё раз.\n"
+            f"(Я вижу оплаченные: {len(paid_orders)})"
         )
         return
 
-    try:
-        invite = bot.create_chat_invite_link(
-            chat_id=CHANNEL_ID,
-            member_limit=1,
-            expire_date=int(time.time()) + 1800
-        )
-        bot.send_message(
-            message.chat.id,
-            f"✅ Оплата подтверждена!\nВот ссылка для входа в канал:\n{invite.invite_link}"
-        )
-    except Exception as e:
-        bot.send_message(message.chat.id, f"Ошибка при создании ссылки: {e}")
-
-
-def run_bot():
-    bot.infinity_polling(skip_pending=True)
-
-
-threading.Thread(target=run_bot, daemon=True).start()
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "10000")))
+    invite = bot.create_chat_invite_link(
+        chat_id=CHANNEL_ID,
+        member_limit=1,
+        expire_date=int(time.time()) + 1800
+    )
+    bot.send_message(message.chat.id, f"✅ Оплата подтверждена!\nВот ссылка:\n{invite.invite_link}")
