@@ -64,3 +64,28 @@ def start_cmd(message):
         expire_date=int(time.time()) + 1800
     )
     bot.send_message(message.chat.id, f"✅ Оплата подтверждена!\nВот ссылка:\n{invite.invite_link}")
+
+@bot.message_handler(commands=["start"])
+def start_cmd(message):
+    ...
+    invite = bot.create_chat_invite_link(
+        chat_id=CHANNEL_ID,
+        member_limit=1,
+        expire_date=int(time.time()) + 1800
+    )
+    bot.send_message(message.chat.id, f"✅ Оплата подтверждена!\nВот ссылка:\n{invite.invite_link}")
+
+
+@bot.message_handler(func=lambda message: True)
+def handle_all_messages(message):
+    bot.send_message(
+        message.chat.id,
+        "Спасибо! Ваша заявка получена.\n"
+        "Мы проверим оплату и пришлём ссылку для входа в канал."
+    )
+
+    admin_chat_id = 123456789  # ← сюда вставим ваш Telegram ID
+    try:
+        bot.forward_message(admin_chat_id, message.chat.id, message.message_id)
+    except Exception as e:
+        print("Ошибка пересылки админу:", e)
