@@ -84,7 +84,7 @@ def handle_all_messages(message):
         "Мы проверим оплату и пришлём ссылку для входа в канал."
     )
 
-    admin_chat_id = 123456789  # ← сюда вставим ваш Telegram ID
+    admin_chat_id = 1870956548  # ← сюда вставим ваш Telegram ID
     try:
         bot.forward_message(admin_chat_id, message.chat.id, message.message_id)
     except Exception as e:
